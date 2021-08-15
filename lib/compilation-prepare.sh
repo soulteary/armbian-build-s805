@@ -586,15 +586,6 @@ compilation_prepare()
 		sed -i '/source "drivers\/net\/wireless\/ti\/Kconfig"/a source "drivers\/net\/wireless\/rtl8723ds\/Kconfig"' \
 		"$kerneldir/drivers/net/wireless/Kconfig"
 
-#		if [ "$EXTRAWIFI_LOCAL" != yes ]; then
-
-                # add support for K5.11+
-#                process_patch_file "${SRC}/patch/misc/wireless-rtl8723ds.patch" "applying"
-
-		# add support for K5.12+
-#		process_patch_file "${SRC}/patch/misc/wireless-realtek-8723ds.patch" "applying"
-
-#		fi
 	fi
 
 

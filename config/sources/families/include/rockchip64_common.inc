@@ -133,16 +133,10 @@ case $BRANCH in
 
 	edge)
 
+		KERNELPATCHDIR='rockchip64-'$BRANCH
 		KERNELBRANCH="branch:linux-5.13.y"
-		if [[ $BOARD == station* || $BOARD == renegade ]]; then
-			KERNELPATCHDIR='station-'$BRANCH
-			LINUXFAMILY=station
-			LINUXCONFIG='linux-station-'$BRANCH
-		else
-			KERNELPATCHDIR='rockchip64-'$BRANCH
-			LINUXFAMILY=rockchip64
-			LINUXCONFIG='linux-rockchip64-'$BRANCH
-		fi
+		LINUXFAMILY=rockchip64
+		LINUXCONFIG='linux-rockchip64-'$BRANCH
 
 	;;
 
@@ -156,7 +150,7 @@ prepare_boot_configuration()
 		ATFSOURCE='https://github.com/ARM-software/arm-trusted-firmware'
 		ATF_COMPILER='aarch64-linux-gnu-'
 		ATFDIR='arm-trusted-firmware'
-		ATFBRANCH='tag:v2.2'
+		ATFBRANCH='tag:v2.5'
 		ATF_USE_GCC='> 6.3'
 		ATF_TARGET_MAP="M0_CROSS_COMPILE=arm-linux-gnueabi- PLAT=$BOOT_SOC bl31;;build/$BOOT_SOC/release/bl31/bl31.elf:bl31.bin"
 		ATF_TOOLCHAIN2="arm-linux-gnueabi-:> 5.0"
