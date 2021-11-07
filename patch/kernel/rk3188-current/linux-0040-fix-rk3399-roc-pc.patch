@@ -1,0 +1,30 @@
+From 7264cf153e5bfe01eb3cc7b9d34c91ecce3aee58 Mon Sep 17 00:00:00 2001
+From: balbes150 <balbes-150@yandex.ru>
+Date: Wed, 16 Dec 2020 11:41:36 +0300
+Subject: [PATCH] fix
+
+---
+ arch/arm64/boot/dts/rockchip/rk3399-roc-pc.dtsi | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399-roc-pc.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-roc-pc.dtsi
+index 7daeb87f5..28d0ca465 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399-roc-pc.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3399-roc-pc.dtsi
+@@ -498,6 +498,8 @@
+ 		regulator-min-microvolt = <712500>;
+ 		regulator-max-microvolt = <1500000>;
+ 		regulator-ramp-delay = <1000>;
++		regulator-always-on;
++		regulator-boot-on;
+ 		vin-supply = <&vcc3v3_sys>;
+ 
+ 		regulator-state-mem {
+@@ -812,6 +814,7 @@
+ 
+ &usbdrd_dwc3_0 {
+ 	status = "okay";
++	dr_mode = "host";
+ };
+ 
+ &usbdrd3_1 {

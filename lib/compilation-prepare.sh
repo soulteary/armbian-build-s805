@@ -1,26 +1,47 @@
-
+#!/bin/bash
 #
-# Copyright (c) 2015 Igor Pecovnik, igor.pecovnik@gma**.com
+# Copyright (c) 2013-2021 Igor Pecovnik, igor.pecovnik@gma**.com
 #
 # This file is licensed under the terms of the GNU General Public
 # License version 2. This program is licensed "as is" without any
 # warranty of any kind, whether express or implied.
-
+#
 # This file is a part of the Armbian build script
 # https://github.com/armbian/build/
 
 # Functions:
+
 # compilation_prepare
+
+
+
 
 compilation_prepare()
 {
 
-	# Packaging patch for modern kernels should be one for all. 
+	# Packaging patch for modern kernels should be one for all.
 	# Currently we have it per kernel family since we can't have one
 	# Maintaining one from central location starting with 5.3+
 	# Temporally set for new "default->legacy,next->current" family naming
 
-	if linux-version compare "${version}" ge 5.10; then
+	if linux-version compare "${version}" ge 5.12; then
+
+		if test -d ${kerneldir}/debian
+		then
+			rm -rf ${kerneldir}/debian/*
+		fi
+		sed -i -e '
+			s/^KBUILD_IMAGE	:= \$(boot)\/Image\.gz$/KBUILD_IMAGE	:= \$(boot)\/Image/
+		' ${kerneldir}/arch/arm64/Makefile
+
+		rm -f ${kerneldir}/scripts/package/{builddeb,mkdebian}
+
+		cp ${SRC}/packages/armbian/builddeb ${kerneldir}/scripts/package/builddeb
+		cp ${SRC}/packages/armbian/mkdebian ${kerneldir}/scripts/package/mkdebian
+
+		chmod 755 ${kerneldir}/scripts/package/{builddeb,mkdebian}
+
+	elif linux-version compare "${version}" ge 5.10; then
 		display_alert "Adjusting" "packaging" "info"
 		cd "$kerneldir" || exit
 		process_patch_file "${SRC}/patch/misc/general-packaging-5.10.y.patch" "applying"
@@ -42,39 +63,41 @@ compilation_prepare()
 
 	if [[ "${version}" == "4.19."* ]] && [[ "$LINUXFAMILY" == sunxi* || "$LINUXFAMILY" == meson64 || \
 	"$LINUXFAMILY" == mvebu64 || "$LINUXFAMILY" == mt7623 || "$LINUXFAMILY" == mvebu ]]; then
-		display_alert "Adjustin" "packaging" "info"
+		display_alert "Adjusting" "packaging" "info"
 		cd "$kerneldir" || exit
 		process_patch_file "${SRC}/patch/misc/general-packaging-4.19.y.patch" "applying"
 	fi
 
 	if [[ "${version}" == "4.14."* ]] && [[ "$LINUXFAMILY" == s5p6818 || "$LINUXFAMILY" == mvebu64 || \
 	"$LINUXFAMILY" == imx7d || "$LINUXFAMILY" == odroidxu4 || "$LINUXFAMILY" == mvebu ]]; then
-		display_alert "Adjustin" "packaging" "info"
+		display_alert "Adjusting" "packaging" "info"
 		cd "$kerneldir" || exit
 		process_patch_file "${SRC}/patch/misc/general-packaging-4.14.y.patch" "applying"
 	fi
 
 	if [[ "${version}" == "4.4."* || "${version}" == "4.9."* ]] && \
 	[[ "$LINUXFAMILY" == rockpis || "$LINUXFAMILY" == rk3399 ]]; then
-		display_alert "Adjustin" "packaging" "info"
+		display_alert "Adjusting" "packaging" "info"
 		cd "$kerneldir" || exit
 		process_patch_file "${SRC}/patch/misc/general-packaging-4.4.y-rk3399.patch" "applying"
 	fi
 
-	if [[ "${version}" == "4.4."* ]] && [[ "$LINUXFAMILY" == rockchip64 ]]; then
-		display_alert "Adjustin" "packaging" "info"
+	if [[ "${version}" == "4.4."* ]] && \
+	[[ "$LINUXFAMILY" == rockchip64 || "$LINUXFAMILY" == station* || "$LINUXFAMILY" == renegade ]]; then
+		display_alert "Adjusting" "packaging" "info"
 		cd "$kerneldir" || exit
 		process_patch_file "${SRC}/patch/misc/general-packaging-4.4.y-rockchip64.patch" "applying"
 	fi
 
-	if [[ "${version}" == "4.4."* ]] && [[ "$LINUXFAMILY" == rockchip || "$LINUXFAMILY" == rk322x ]]; then
-                display_alert "Adjustin" "packaging" "info"
+	if [[ "${version}" == "4.4."* ]] && \
+	[[ "$LINUXFAMILY" == rockchip || "$LINUXFAMILY" == rk322x || "$LINUXFAMILY" == rk3288 ]]; then
+                display_alert "Adjusting" "packaging" "info"
                 cd "$kerneldir" || exit
                 process_patch_file "${SRC}/patch/misc/general-packaging-4.4.y.patch" "applying"
         fi
 
 	if [[ "${version}" == "4.9."* ]] && [[ "$LINUXFAMILY" == meson64 || "$LINUXFAMILY" == odroidc4 ]]; then
-		display_alert "Adjustin" "packaging" "info"
+		display_alert "Adjusting" "packaging" "info"
 		cd "$kerneldir" || exit
 		process_patch_file "${SRC}/patch/misc/general-packaging-4.9.y.patch" "applying"
 	fi
@@ -86,6 +109,10 @@ compilation_prepare()
 	if linux-version compare "${version}" ge 5.8.10; then
 
 		display_alert "Adding" "Kernel splash file" "info"
+
+                if linux-version compare "${version}" ge 5.13; then
+                        process_patch_file "${SRC}/patch/misc/bootsplash-5.10.y-0001-Revert-vgacon-drop-unused-vga_init_done.patch" "applying"
+                fi
 
 		process_patch_file "${SRC}/patch/misc/bootsplash-5.8.10-0001-Revert-vgacon-remove-software-scrollback-support.patch" "applying"
 		process_patch_file "${SRC}/patch/misc/bootsplash-5.8.10-0002-Revert-fbcon-remove-now-unusued-softback_lines-curso.patch" "applying"
@@ -131,7 +158,7 @@ compilation_prepare()
 	#
 	# Older versions have AUFS support with a patch
 
-	if linux-version compare "${version}" ge 5.1 && linux-version compare "${version}" le 5.8 && [ "$AUFS" == yes ]; then
+	if linux-version compare "${version}" ge 5.1 && linux-version compare "${version}" le 5.12 && [ "$AUFS" == yes ]; then
 
 		# attach to specifics tag or branch
 		local aufstag
@@ -200,7 +227,7 @@ compilation_prepare()
 
 	# Updated USB network drivers for RTL8152/RTL8153 based dongles that also support 2.5Gbs variants
 
-	if linux-version compare "${version}" ge 5.4 && [ $LINUXFAMILY != mvebu64 ] && [ $LINUXFAMILY != rk322x ] && [ $LINUXFAMILY != odroidxu4 ] && [ $EXTRAWIFI == yes ]; then
+	if linux-version compare "${version}" ge 5.4 && linux-version compare "${version}" le 5.12 && [ $LINUXFAMILY != mvebu64 ] && [ $LINUXFAMILY != rk322x ] && [ $LINUXFAMILY != odroidxu4 ] && [ $EXTRAWIFI == yes ]; then
 
 		# attach to specifics tag or branch
 		local rtl8152ver="branch:master"
@@ -378,6 +405,9 @@ compilation_prepare()
 		sed -i '/source "drivers\/net\/wireless\/ti\/Kconfig"/a source "drivers\/net\/wireless\/xradio\/Kconfig"' \
 		"$kerneldir/drivers/net/wireless/Kconfig"
 
+		# add support for K5.13+
+                process_patch_file "${SRC}/patch/misc/wireless-xradio-5.13.patch" "applying"
+
 	fi
 
 
@@ -421,6 +451,12 @@ compilation_prepare()
 		sed -i '/source "drivers\/net\/wireless\/ti\/Kconfig"/a source "drivers\/net\/wireless\/rtl8811cu\/Kconfig"' \
 		"$kerneldir/drivers/net/wireless/Kconfig"
 
+		# add support for K5.11+
+		process_patch_file "${SRC}/patch/misc/wireless-rtl8811cu.patch" "applying"
+
+		# add support for K5.12+
+		process_patch_file "${SRC}/patch/misc/wireless-realtek-8811cu-5.12.patch" "applying"
+
 	fi
 
 
@@ -460,8 +496,10 @@ compilation_prepare()
 		sed -i '/source "drivers\/net\/wireless\/ti\/Kconfig"/a source "drivers\/net\/wireless\/rtl8188eu\/Kconfig"' \
 		"$kerneldir/drivers/net/wireless/Kconfig"
 
-		# kernel 5.6 ->
 		process_patch_file "${SRC}/patch/misc/wireless-rtl8188eu.patch" "applying"
+
+		# add support for K5.12+
+		process_patch_file "${SRC}/patch/misc/wireless-realtek-8188eu-5.12.patch" "applying"
 
 	fi
 
@@ -502,6 +540,9 @@ compilation_prepare()
 		sed -i '/source "drivers\/net\/wireless\/ti\/Kconfig"/a source "drivers\/net\/wireless\/rtl88x2bu\/Kconfig"' \
 		"$kerneldir/drivers/net/wireless/Kconfig"
 
+		# add support for K5.12+
+		process_patch_file "${SRC}/patch/misc/wireless-realtek-88x2bu-5.12.patch" "applying"
+
 	fi
 
 
@@ -509,14 +550,18 @@ compilation_prepare()
 
 	# Wireless drivers for Realtek 8723DS chipsets
 
-	if linux-version compare "${version}" ge 5.0 && [ "$EXTRAWIFI" == yes ]; then
+	if linux-version compare "${version}" ge 4.4 && linux-version compare "${version}" lt 5.12 && [ "$EXTRAWIFI" == yes ]; then
 
 		# attach to specifics tag or branch
-		local rtl8723dsver="branch:master"
-
 		display_alert "Adding" "Wireless drivers for Realtek 8723DS chipsets ${rtl8723dsver}" "info"
 
-		fetch_from_repo "https://github.com/lwfinger/rtl8723ds" "rtl8723ds" "${rtl8723dsver}" "yes"
+		if [ "$EXTRAWIFI_LOCAL" == yes ]; then
+			local rtl8723dsver="branch:local_rtl8723ds-rk"
+			fetch_from_repo "https://github.com/150balbes/wifi" "rtl8723ds" "${rtl8723dsver}" "yes"
+		else
+			local rtl8723dsver="branch:master"
+			fetch_from_repo "https://github.com/lwfinger/rtl8723ds" "rtl8723ds" "${rtl8723dsver}" "yes"
+		fi
 		cd "$kerneldir" || exit
 		rm -rf "$kerneldir/drivers/net/wireless/rtl8723ds"
 		mkdir -p "$kerneldir/drivers/net/wireless/rtl8723ds/"
@@ -548,15 +593,23 @@ compilation_prepare()
 
 	# Wireless drivers for Realtek 8723DU chipsets
 
-	if linux-version compare $version ge 5.0 && [ "$EXTRAWIFI" == yes ]; then
+	if linux-version compare $version ge 4.4 && [ "$EXTRAWIFI" == yes ]; then
 
 		# attach to specifics tag or branch
-		local rtl8723duver="branch:master"
-
 		display_alert "Adding" "Wireless drivers for Realtek 8723DU chipsets ${rtl8723duver}" "info"
 
-		fetch_from_repo "https://github.com/lwfinger/rtl8723du" "rtl8723du" "${rtl8723duver}" "yes"
-		cd $kerneldir
+		if [ "$EXTRAWIFI_LOCAL" == yes ]; then
+			local rtl8723duver="branch:local_rtl8723du-rk"
+			fetch_from_repo "https://github.com/150balbes/wifi" "rtl8723du" "${rtl8723duver}" "yes"
+		else
+			if linux-version compare $version ge 5.12 ; then
+				local rtl8723duver="branch:v5.13.4"
+			else
+				local rtl8723duver="branch:master"
+			fi
+			fetch_from_repo "https://github.com/lwfinger/rtl8723du" "rtl8723du" "${rtl8723duver}" "yes"
+		fi
+		cd "$kerneldir" || exit
 		rm -rf $kerneldir/drivers/net/wireless/rtl8723du
 		mkdir -p $kerneldir/drivers/net/wireless/rtl8723du/
 		cp -R ${SRC}/cache/sources/rtl8723du/${rtl8723duver#*:}/{core,hal,include,os_dep,platform} \
@@ -579,8 +632,41 @@ compilation_prepare()
 	fi
 
 
+	# Wireless drivers for Realtek 8822BS chipsets
+
+	if linux-version compare "${version}" ge 4.4 && [ "$EXTRAWIFI" == yes ]; then
+
+		# attach to specifics tag or branch
+		display_alert "Adding" "Wireless drivers for Realtek 8822BS chipsets ${rtl8822bsver}" "info"
+
+		local rtl8822bsver="branch:local_rtl8822bs"
+		fetch_from_repo "https://github.com/150balbes/wifi" "rtl8822bs" "${rtl8822bsver}" "yes"
+		cd "$kerneldir" || exit
+		rm -rf "$kerneldir/drivers/net/wireless/rtl8822bs"
+		mkdir -p $kerneldir/drivers/net/wireless/rtl8822bs/
+		cp -R "${SRC}/cache/sources/rtl8822bs/${rtl8822bsver#*:}"/{core,hal,include,os_dep,platform,bluetooth,getAP,rtl8822b.mk} \
+		$kerneldir/drivers/net/wireless/rtl8822bs
+
+		# Makefile
+		cp "${SRC}/cache/sources/rtl8822bs/${rtl8822bsver#*:}/Makefile" \
+		$kerneldir/drivers/net/wireless/rtl8822bs/Makefile
+
+		# Kconfig
+		sed -i 's/---help---/help/g' "${SRC}/cache/sources/rtl8822bs/${rtl8822bsver#*:}/Kconfig"
+		cp "${SRC}/cache/sources/rtl8822bs/${rtl8822bsver#*:}/Kconfig" \
+		"$kerneldir/drivers/net/wireless/rtl8822bs/Kconfig"
+
+		# Add to section Makefile
+		echo "obj-\$(CONFIG_RTL8822BS) += rtl8822bs/" >> $kerneldir/drivers/net/wireless/Makefile
+		sed -i '/source "drivers\/net\/wireless\/ti\/Kconfig"/a source "drivers\/net\/wireless\/rtl8822bs\/Kconfig"' \
+		$kerneldir/drivers/net/wireless/Kconfig
+
+	fi
+
+
+
 	if linux-version compare $version ge 4.4 && linux-version compare $version lt 5.8; then
-		display_alert "Adjustin" "Framebuffer driver for ST7789 IPS display" "info"
+		display_alert "Adjusting" "Framebuffer driver for ST7789 IPS display" "info"
 		process_patch_file "${SRC}/patch/misc/fbtft-st7789v-invert-color.patch" "applying"
 	fi
 
