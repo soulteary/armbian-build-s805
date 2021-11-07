@@ -1,6 +1,6 @@
 --- /scripts/package/builddeb
 +++ /scripts/package/builddeb
-@@ -41,23 +41,6 @@
+@@ -41,23 +41,6 @@ create_package() {
  	# in case we are in a restrictive umask environment like 0077
  	chmod -R a+rX "$pdir"
  
@@ -24,7 +24,7 @@
  	# Create postinst prerm scripts for headers
  	if [ "$3" = "headers" ]; then
  
-@@ -141,7 +124,6 @@
+@@ -142,7 +125,6 @@ tmpdir="$objtree/debian/tmp"
  kernel_headers_dir="$objtree/debian/hdrtmp"
  libc_headers_dir="$objtree/debian/headertmp"
  dbg_dir="$objtree/debian/dbgtmp"
@@ -32,7 +32,7 @@
  packagename=linux-image-"$BRANCH$LOCALVERSION"
  kernel_headers_packagename=linux-headers-"$BRANCH$LOCALVERSION"
  dtb_packagename=linux-dtb-"$BRANCH$LOCALVERSION"
-@@ -178,9 +160,7 @@
+@@ -179,9 +161,7 @@ esac
  BUILD_DEBUG=$(if_enabled_echo CONFIG_DEBUG_INFO Yes)
  
  # Setup the directory structure
@@ -43,7 +43,7 @@
  mkdir -m 755 -p "$tmpdir/DEBIAN"
  mkdir -p "$tmpdir/lib" "$tmpdir/boot"
  mkdir -p "$kernel_headers_dir/lib/modules/$version/"
-@@ -201,7 +181,7 @@
+@@ -202,7 +182,7 @@ cp "$($MAKE -s -f $srctree/Makefile imag
  if is_enabled CONFIG_OF_EARLY_FLATTREE; then
  	# Only some architectures with OF support have this target
  	if [ -d "${srctree}/arch/$SRCARCH/boot/dts" ]; then
@@ -52,7 +52,7 @@
  	fi
  fi
  
-@@ -232,11 +212,6 @@
+@@ -233,11 +213,6 @@ if is_enabled CONFIG_MODULES; then
  	fi
  fi
  
@@ -64,7 +64,7 @@
  if [ "$ARCH" != "um" ]; then
  	$MAKE -f $srctree/Makefile headers
  	$MAKE -f $srctree/Makefile headers_install INSTALL_HDR_PATH="$libc_headers_dir/usr"
-@@ -272,53 +247,21 @@
+@@ -273,44 +248,21 @@ EOF
  	chmod 755 "$tmpdir/DEBIAN/$script"
  done
  
@@ -73,19 +73,9 @@
 -##
 +## Add postinstall
  sed -e "s/exit 0//g" -i $tmpdir/DEBIAN/postinst
--cat >> $tmpdir/DEBIAN/postinst <<EOT
--if [ "\$(grep nand /proc/partitions)" != "" ] && [ "\$(grep mmc /proc/partitions)" = "" ]; then
--	mkimage -A arm -O linux -T kernel -C none -a "0x40008000" -e "0x40008000" -n "Linux kernel" -d /$installed_image_path /boot/uImage  > /dev/null 2>&1
--	cp /boot/uImage /tmp/uImage
--	sync
--	mountpoint -q /boot || mount /boot
--	cp /tmp/uImage /boot/uImage
--	rm -f /$installed_image_path
--else
--	ln -sf $(basename $installed_image_path) /boot/$image_name 2> /dev/null || mv /$installed_image_path /boot/$image_name
--fi
+ cat >> $tmpdir/DEBIAN/postinst <<EOT
+-ln -sf $(basename $installed_image_path) /boot/$image_name 2> /dev/null || mv /$installed_image_path /boot/$image_name
 -touch /boot/.next
-+cat >> $tmpdir/DEBIAN/postinst <<EOT 
 +mkimage -A arm -O linux -T kernel -C none -a "0x00208000" -e "0x00208000" -n "Linux kernel" -d /$installed_image_path /boot/uImage  > /dev/null 2>&1
  exit 0
  EOT
@@ -126,7 +116,7 @@
  
  # Build kernel header package
  (cd $srctree; find . -name Makefile\* -o -name Kconfig\* -o -name \*.pl) > "$objtree/debian/hdrsrcfiles"
-@@ -346,7 +289,6 @@
+@@ -338,7 +290,6 @@ rm -f "$objtree/debian/hdrsrcfiles" "$ob
  
  if [ "$ARCH" != "um" ]; then
  	create_package "$kernel_headers_packagename" "$kernel_headers_dir" "headers"
@@ -134,4 +124,3 @@
  fi
  
  create_package "$packagename" "$tmpdir"
-
