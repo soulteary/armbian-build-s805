@@ -1,8 +1,7 @@
-From ede38737d127d812dba299abdc5d5f0686f2dee3 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Ondrej Jirman <megi@xff.cz>
 Date: Thu, 10 Nov 2022 23:01:54 +0100
-Subject: [PATCH 229/389] mfd: axp20x: Improve interrupt order for POK handling
- during sleep
+Subject: mfd: axp20x: Improve interrupt order for POK handling during sleep
 
 When the individual interrupt is not handled immediately and the
 user manages to press and release the POK before interrupt handler
@@ -28,10 +27,10 @@ Signed-off-by: Ondrej Jirman <megi@xff.cz>
  1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-index 9ab0e2fca7ea..a13ba2bdd01f 100644
+index 111111111111..222222222222 100644
 --- a/include/linux/mfd/axp20x.h
 +++ b/include/linux/mfd/axp20x.h
-@@ -432,8 +432,8 @@ enum {
+@@ -433,8 +433,8 @@ enum {
  	AXP152_IRQ_PEK_SHORT,
  	AXP152_IRQ_PEK_LONG,
  	AXP152_IRQ_TIMER,
@@ -41,7 +40,7 @@ index 9ab0e2fca7ea..a13ba2bdd01f 100644
  	AXP152_IRQ_GPIO3_INPUT,
  	AXP152_IRQ_GPIO2_INPUT,
  	AXP152_IRQ_GPIO1_INPUT,
-@@ -472,8 +472,8 @@ enum {
+@@ -473,8 +473,8 @@ enum {
  	AXP20X_IRQ_LOW_PWR_LVL1,
  	AXP20X_IRQ_LOW_PWR_LVL2,
  	AXP20X_IRQ_TIMER,
@@ -51,7 +50,7 @@ index 9ab0e2fca7ea..a13ba2bdd01f 100644
  	AXP20X_IRQ_GPIO3_INPUT,
  	AXP20X_IRQ_GPIO2_INPUT,
  	AXP20X_IRQ_GPIO1_INPUT,
-@@ -502,8 +502,8 @@ enum axp22x_irqs {
+@@ -503,8 +503,8 @@ enum axp22x_irqs {
  	AXP22X_IRQ_LOW_PWR_LVL1,
  	AXP22X_IRQ_LOW_PWR_LVL2,
  	AXP22X_IRQ_TIMER,
@@ -61,7 +60,7 @@ index 9ab0e2fca7ea..a13ba2bdd01f 100644
  	AXP22X_IRQ_GPIO1_INPUT,
  	AXP22X_IRQ_GPIO0_INPUT,
  };
-@@ -571,8 +571,8 @@ enum axp803_irqs {
+@@ -572,8 +572,8 @@ enum axp803_irqs {
  	AXP803_IRQ_LOW_PWR_LVL1,
  	AXP803_IRQ_LOW_PWR_LVL2,
  	AXP803_IRQ_TIMER,
@@ -71,7 +70,7 @@ index 9ab0e2fca7ea..a13ba2bdd01f 100644
  	AXP803_IRQ_PEK_SHORT,
  	AXP803_IRQ_PEK_LONG,
  	AXP803_IRQ_PEK_OVER_OFF,
-@@ -623,8 +623,8 @@ enum axp809_irqs {
+@@ -624,8 +624,8 @@ enum axp809_irqs {
  	AXP809_IRQ_LOW_PWR_LVL1,
  	AXP809_IRQ_LOW_PWR_LVL2,
  	AXP809_IRQ_TIMER,
@@ -82,5 +81,5 @@ index 9ab0e2fca7ea..a13ba2bdd01f 100644
  	AXP809_IRQ_PEK_LONG,
  	AXP809_IRQ_PEK_OVER_OFF,
 -- 
-2.35.3
+Armbian
 

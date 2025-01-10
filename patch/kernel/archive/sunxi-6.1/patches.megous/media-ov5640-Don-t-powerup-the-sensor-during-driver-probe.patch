@@ -1,8 +1,7 @@
-From e19e108f994692ceb398410c7531c96456cd7056 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Ond=C5=99ej=20Jirman?= <megi@xff.cz>
 Date: Sun, 26 Jan 2020 00:28:10 +0100
-Subject: [PATCH 050/389] media: ov5640: Don't powerup the sensor during driver
- probe
+Subject: media: ov5640: Don't powerup the sensor during driver probe
 
 It causes autofocus clicking during boot on some devices, and
 it's enough to do it when turning on the sensor power by media
@@ -10,14 +9,14 @@ pipeline via s_power callback, later on.
 
 Signed-off-by: Ondrej Jirman <megi@xff.cz>
 ---
- drivers/media/i2c/ov5640.c | 35 ++++++++---------------------------
+ drivers/media/i2c/ov5640.c | 35 +++-------
  1 file changed, 8 insertions(+), 27 deletions(-)
 
 diff --git a/drivers/media/i2c/ov5640.c b/drivers/media/i2c/ov5640.c
-index 0c2e7767cb4e..649405686523 100644
+index 111111111111..222222222222 100644
 --- a/drivers/media/i2c/ov5640.c
 +++ b/drivers/media/i2c/ov5640.c
-@@ -2472,6 +2472,7 @@ static void ov5640_reset(struct ov5640_dev *sensor)
+@@ -2493,6 +2493,7 @@ static void ov5640_powerup_sequence(struct ov5640_dev *sensor)
  static int ov5640_set_power_on(struct ov5640_dev *sensor)
  {
  	struct i2c_client *client = sensor->i2c_client;
@@ -25,7 +24,7 @@ index 0c2e7767cb4e..649405686523 100644
  	int ret;
  
  	ret = clk_prepare_enable(sensor->xclk);
-@@ -2496,6 +2497,13 @@ static int ov5640_set_power_on(struct ov5640_dev *sensor)
+@@ -2516,6 +2517,13 @@ static int ov5640_set_power_on(struct ov5640_dev *sensor)
  	if (ret)
  		goto power_off;
  
@@ -39,7 +38,7 @@ index 0c2e7767cb4e..649405686523 100644
  	return 0;
  
  power_off:
-@@ -3797,28 +3805,6 @@ static int ov5640_get_regulators(struct ov5640_dev *sensor)
+@@ -3813,28 +3821,6 @@ static int ov5640_get_regulators(struct ov5640_dev *sensor)
  				       sensor->supplies);
  }
  
@@ -68,8 +67,8 @@ index 0c2e7767cb4e..649405686523 100644
  static int ov5640_probe(struct i2c_client *client)
  {
  	struct device *dev = &client->dev;
-@@ -3921,14 +3907,9 @@ static int ov5640_probe(struct i2c_client *client)
- 		goto entity_cleanup;
+@@ -3938,14 +3924,9 @@ static int ov5640_probe(struct i2c_client *client)
+ 		goto free_ctrls;
  	}
  
 -	pm_runtime_set_active(dev);
@@ -84,5 +83,5 @@ index 0c2e7767cb4e..649405686523 100644
  	if (ret)
  		goto err_pm_runtime;
 -- 
-2.35.3
+Armbian
 

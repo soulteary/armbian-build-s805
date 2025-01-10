@@ -1,4 +1,5 @@
 name: Forked Helper
+run-name: Forked Helper dispatch on ${{ github.event_name }}
 
 on:
   push:
@@ -8,28 +9,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  fork-repository-dispatch:
-    name: 📢 Run repository dispatch to default fork branch
-    if: ${{ github.repository_owner != 'armbian' }}
+  dispatch-on-forked-repo:
+    name: 📢 Run repository dispatch on fork
+    env:
+      DISPATCH_SECRET: ${{ secrets.ARMBIAN_SELF_DISPATCH_TOKEN }}
+    if: ${{ github.repository_owner != 'armbian' }} # Run only on forks
     runs-on: ubuntu-latest
     steps:
-      - name: Assign secret
-        id: get_dispatch_secret
-        run: echo '::set-output name=dispatch_secret::${{ secrets.ARMBIAN_SELF_DISPATCH_TOKEN }}'
-      - name: Get event details
-        id: get_event_details
-        # Process JSON according https://github.community/t5/GitHub-Actions/set-output-Truncates-Multiline-Strings/td-p/37870
-        run: |
-          JSON=$(cat ${{ github.event_path }})
-          JSON="${JSON//'%'/'%25'}"
-          JSON="${JSON//$'\n'/'%0A'}"
-          JSON="${JSON//$'\r'/'%0D'}"
-          echo "::set-output name=event_details::${JSON}"
-      - name: Dispatch event on forked repostitory
-        if: steps.get_dispatch_secret.outputs.dispatch_secret
-        uses: peter-evans/repository-dispatch@v2
+      - name: Dispatch event on forked repository
+        if: ${{ env.DISPATCH_SECRET != '' }}  # Check that the secret has been set, if not, exit
+        uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ steps.get_dispatch_secret.outputs.dispatch_secret }}
+          token: ${{ env.DISPATCH_SECRET }}
           repository: ${{ github.repository }}
           event-type: armbian
           client-payload: >
@@ -38,5 +29,5 @@ jobs:
               "ref": "${{ github.ref }}",
               "base_ref": "${{ github.base_ref }}",
               "sha": "${{ github.sha }}",
-              "event_details": ${{ steps.get_event_details.outputs.event_details }}
+              "event_details": ${{ toJSON(github.event) }}
             }

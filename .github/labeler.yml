@@ -10,27 +10,48 @@
 #
 # Please keep the labels sorted and deduplicated.
 
-"Hardware :gear:":
-  - patch/u-boot/*
-  - patch/u-boot/**/*
-  - patch/atf/*
-  - config/bootenv/*
-  - config/bootscripts/*
-  - patch/kernel/*
-  - patch/kernel/**/*
-  - patch/misc/*
-  - config/kernel/*
-  - config/sources/*
-  - config/sources/**/*
-  - config/boards/*
-  - config/bootscripts/*
-  - config/bootenv/*
+"Needs review":
+- changed-files:
+  - any-glob-to-any-file: '**'
 
-"Software :chains:":
-  - lib/*
-  - tools/*
-  - config/cli/*
-  - .github/workflows/*
+"Hardware":
+- all:
+  - changed-files:
+    - any-glob-to-any-file: ['patch/**/*','config/**/*']
+    - all-globs-to-all-files: ['!config/cli/**/*','!config/desktop/**/*','!config/distributions/**/*']
 
-"Desktop :desktop_computer:":
-  - config/desktop/*
+"Framework":
+- all:
+  - changed-files:
+    - any-glob-to-any-file: ['lib/**/*','tools/**/*','config/cli/**/*','extensions/**/*']
+
+"BSP":
+- all:
+  - changed-files:
+    - any-glob-to-any-file: ['packages/**/*']
+
+"GitHub Actions":
+- all:
+  - changed-files:
+    - any-glob-to-any-file: ['.github/workflows/**/*']
+
+"GitHub":
+- all:
+  - changed-files:
+    - any-glob-to-any-file: ['.github/**/*']
+    - all-globs-to-any-file: ['!.github/workflows/**/*']
+
+"Desktop":
+- all:
+  - changed-files:
+    - any-glob-to-any-file: ['config/desktop/**/*']
+
+"Patches":
+- all:
+  - changed-files:
+    - any-glob-to-any-file: ['patch/**/*']
+
+# Add 'Documentation' label to any change to .md files within the entire repository 
+"Documentation":
+- changed-files:
+  - any-glob-to-any-file: '**/*.md'
